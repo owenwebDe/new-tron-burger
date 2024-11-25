@@ -5,17 +5,39 @@ import path from "path";
 import { User } from "./models/User"; // Import the User model
 import indexRoutes from "./routes/index";
 import referralRoutes from "./routes/referral";
+import setWebhook from "./setWebhook";
+
+// Call the function to set the webhook when the app starts
+setWebhook();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Load environment variables
+const MONGODB_URI =
+  process.env.MONGODB_URI || "mongodb://localhost:27017/turger-game";
+const SESSION_SECRET = process.env.SESSION_SECRET || "@Babatunde112";
+
+// Connect to MongoDB
+mongoose
+  .connect(MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((error) => {
+    console.error("MongoDB connection error:", error);
+  });
+
 // Middleware for session
 app.use(
   session({
-    secret: "@Babatunde112", // Replace with a strong secret key
+    secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }, // Set to true if using HTTPS
+    cookie: { secure: process.env.NODE_ENV === "production" }, // Enable secure cookies in production
   })
 );
 
@@ -24,12 +46,6 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "../public")));
 app.use("/", indexRoutes);
 app.use("/referral", referralRoutes);
-
-// MongoDB connection
-mongoose.connect("mongodb://localhost:27017/turger-game", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
 
 // Route to get user balance and transactions
 app.get("/wallet/balance/:userId", async (req, res) => {
