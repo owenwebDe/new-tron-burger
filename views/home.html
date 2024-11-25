@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Turger Game</title>
+    <style>
+      /* General styles */
+      body,
+      html {
+        font-family: Arial, sans-serif;
+        background-color: #ffffff;
+        color: #333;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      h1 {
+        color: #d32f2f;
+      }
+      p {
+        color: #555;
+        font-size: 1.1em;
+        margin: 1em 0;
+      }
+      input[type="text"] {
+        padding: 8px;
+        font-size: 1em;
+        margin-top: 10px;
+      }
+      button {
+        background-color: #d32f2f;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1em;
+        cursor: pointer;
+        border-radius: 5px;
+        margin: 10px 5px;
+      }
+      button:hover {
+        background-color: #b71c1c;
+      }
+
+      /* Main content styles */
+      #main-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding-bottom: 50px; /* To prevent overlap with footer */
+      }
+
+      /* Footer styles */
+      footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background-color: #d32f2f;
+        padding: 10px 0;
+        display: flex;
+        justify-content: space-around;
+      }
+      footer button {
+        flex: 1;
+        padding: 10px 0;
+        font-size: 0.9em;
+      }
+
+      /* Responsive input prompt */
+      #namePrompt {
+        display: none;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main-content">
+      <h1>Welcome to Turger Game, <span id="username">Player</span>!</h1>
+      <p>
+        Experience TRON BURGER ($TURGER) - the first gaming token on the TRON
+        blockchain! <br />Refer friends and earn rewards as you play.
+      </p>
+
+      <!-- Name prompt section -->
+      <div id="namePrompt">
+        <input type="text" id="nameInput" placeholder="Enter your name" />
+        <button onclick="register()">Submit</button>
+      </div>
+
+      <!-- Game and referral buttons -->
+      <button onclick="playGame()">Play Game</button>
+    </div>
+
+    <!-- Footer navigation -->
+    <footer>
+      <button onclick="goToHome()">Home</button>
+      <button onclick="goToReferral()">Referral</button>
+      <button onclick="goToWallet()">Wallet</button>
+    </footer>
+
+    <script>
+      // Check for existing username in local storage and prompt if none is found
+      document.addEventListener("DOMContentLoaded", () => {
+        const savedName = localStorage.getItem("username");
+        if (savedName) {
+          document.getElementById("username").textContent = savedName;
+        } else {
+          document.getElementById("namePrompt").style.display = "block";
+        }
+      });
+
+      // Register function to save the user's name
+      function register() {
+        const name = document.getElementById("nameInput").value;
+        fetch("/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        })
+          .then((response) => response.json())
+          .then((user) => {
+            if (user && user._id) {
+              // Check if user._id is defined
+              document.getElementById("username").textContent = user.name;
+              sessionStorage.setItem("userId", user._id); // Store valid _id
+            } else {
+              console.error("User ID not found.");
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      // Navigation functions
+      function playGame() {
+        location.href = "/game.html";
+      }
+      function goToHome() {
+        location.href = "/home.html";
+      }
+      function goToReferral() {
+        location.href = "/referral.html";
+      }
+      function goToWallet() {
+        location.href = "/wallet.html";
+      }
+    </script>
+  </body>
+</html>

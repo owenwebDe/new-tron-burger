@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Turger Game</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+        overflow: hidden;
+        flex-direction: column;
+      }
+
+      canvas {
+        border: 1px solid black;
+        background-color: #fd0000;
+        display: block;
+        margin-top: 20px;
+      }
+
+      h1,
+      #score {
+        text-align: center;
+        position: absolute;
+        z-index: 10;
+        color: #333;
+        font-family: Arial, sans-serif;
+      }
+
+      #score {
+        top: 50px;
+      }
+
+      h1 {
+        top: 10px;
+        font-size: 2em;
+      }
+
+      #gameOverScreen {
+        display: none;
+        text-align: center;
+        position: absolute;
+        z-index: 20;
+      }
+
+      #gameOverScreen button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Turger Game</h1>
+    <p id="score">Score: 0</p>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen">
+      <p>Game Over! Your Total Score: <span id="finalScore"></span></p>
+      <button onclick="playAgain()">Play Again</button>
+      <button onclick="goHome()">Home</button>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const turgerImg = new Image();
+      turgerImg.src = "/turger.png"; // Ensure this path is correct
+
+      let score = 0;
+      let turgers = [];
+      let gameInterval;
+
+      // Resize canvas to fit the screen
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      // Create a new Turger object
+      function createTurger() {
+        return {
+          x: Math.random() * (canvas.width - 50),
+          y: -50, // Start above the screen
+          speed: 2 + Math.random() * 3, // Random speed
+          width: 50,
+          height: 50,
+        };
+      }
+
+      // Reset game state
+      function resetGame() {
+        turgers = [];
+        for (let i = 0; i < 5; i++) {
+          turgers.push(createTurger());
+        }
+        score = 0;
+        document.getElementById("score").textContent = "Score: " + score;
+        hideGameOverScreen();
+        gameInterval = setInterval(drawTurgers, 20);
+      }
+
+      // Show the game over screen
+      function showGameOverScreen() {
+        document.getElementById("finalScore").textContent = score;
+        document.getElementById("gameOverScreen").style.display = "block";
+      }
+
+      // Hide the game over screen
+      function hideGameOverScreen() {
+        document.getElementById("gameOverScreen").style.display = "none";
+      }
+
+      // Draw all Turgers and update their positions
+      function drawTurgers() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+
+        for (let i = 0; i < turgers.length; i++) {
+          const turger = turgers[i];
+          ctx.drawImage(
+            turgerImg,
+            turger.x,
+            turger.y,
+            turger.width,
+            turger.height
+          );
+          turger.y += turger.speed;
+
+          // If any turger reaches the bottom, game over
+          if (turger.y > canvas.height) {
+            endGame();
+            return;
+          }
+        }
+      }
+
+      // Handle slice (click event)
+      function sliceTurger(event) {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        for (let i = 0; i < turgers.length; i++) {
+          const turger = turgers[i];
+          if (
+            x > turger.x &&
+            x < turger.x + turger.width &&
+            y > turger.y &&
+            y < turger.y + turger.height
+          ) {
+            score += 1;
+            document.getElementById("score").textContent = "Score: " + score;
+            // Reset this turger to a new random position
+            turgers[i] = createTurger();
+          }
+        }
+      }
+
+      // End the game
+
+      function endGame() {
+        clearInterval(gameInterval);
+        sessionStorage.setItem("latestScore", score); // Store score in sessionStorage
+        showGameOverScreen();
+      }
+
+      // Play Again functionality
+      function playAgain() {
+        resetGame();
+      }
+
+      // Home button functionality
+      function goHome() {
+        window.location.href = "/"; // Modify this to your homepage URL
+      }
+
+      // Resize canvas on window resize
+      window.addEventListener("resize", resizeCanvas);
+
+      // Start the game
+      function startGame() {
+        resizeCanvas();
+        canvas.addEventListener("click", sliceTurger);
+        resetGame();
+      }
+
+      // Start the game when the image is loaded
+      turgerImg.onload = startGame;
+    </script>
+  </body>
+</html>
